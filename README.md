@@ -66,3 +66,4 @@ Here is a sample script to demonstrate the key features of the prototype.
     *   Click the "Export Report" button on a harvest log entry. "We can then export these reports for our records."
 
 This script covers the core functionality and demonstrates the reactive, "smart" nature of the simulated system.
+# hacksterproject
