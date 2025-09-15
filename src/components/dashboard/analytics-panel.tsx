@@ -20,6 +20,7 @@ const chartConfigs: Record<MetricKey, { name: string; color: string; predColor: 
 export default function AnalyticsPanel() {
   const { state } = useSimulation();
   const [timeRange, setTimeRange] = useState('1h');
+  const [activeChart, setActiveChart] = useState<MetricKey>('turbidity');
 
   const chartData = useMemo(() => {
     const now = Date.now();
@@ -110,8 +111,6 @@ export default function AnalyticsPanel() {
     </div>
   );
   
-  const [activeChart, setActiveChart] = useState<MetricKey>('turbidity');
-
   return (
     <Card>
       <CardHeader>
