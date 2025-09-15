@@ -38,7 +38,7 @@ async function getBase64(url: string): Promise<string> {
 
 
 export default function AiAnalysisPanel() {
-  const { state: { settings, isRunning }, dispatch } = useSimulation();
+  const { state: { settings, isRunning, scenario }, dispatch } = useSimulation();
   const [analysis, setAnalysis] = useState<AnalyzeCameraFeedOutput | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -47,8 +47,8 @@ export default function AiAnalysisPanel() {
     setIsLoading(true);
     setError(null);
     try {
-      const photoDataUri = await getBase64(spirulinaImage.imageUrl);
-      const result = await analyzeCameraFeedForContamination({ photoDataUri });
+      const photoDataUri = placeholderBase64;
+      const result = await analyzeCameraFeedForContamination({ photoDataUri, scenario });
       setAnalysis(result);
 
       if (result.colorBalance === 'Needs Attention' || result.smellDetection === 'Contaminated') {
@@ -64,7 +64,7 @@ export default function AiAnalysisPanel() {
     } finally {
       setIsLoading(false);
     }
-  }, [dispatch]);
+  }, [dispatch, scenario]);
 
   useEffect(() => {
     if (isRunning) {

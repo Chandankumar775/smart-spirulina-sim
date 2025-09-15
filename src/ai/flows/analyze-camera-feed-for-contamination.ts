@@ -9,6 +9,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import type { Scenario } from '@/lib/types';
 
 const AnalyzeCameraFeedInputSchema = z.object({
   photoDataUri: z
@@ -16,6 +17,7 @@ const AnalyzeCameraFeedInputSchema = z.object({
     .describe(
       "A photo of the camera feed, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
     ),
+  scenario: z.enum(['normal', 'contamination', 'low-light', 'rapid-growth']).describe('The current simulation scenario.'),
 });
 export type AnalyzeCameraFeedInput = z.infer<typeof AnalyzeCameraFeedInputSchema>;
 
@@ -39,28 +41,30 @@ const analyzeCameraFeedForContaminationFlow = ai.defineFlow(
     inputSchema: AnalyzeCameraFeedInputSchema,
     outputSchema: AnalyzeCameraFeedOutputSchema,
   },
-  async input => {
-    // Faked response for demo purposes
-    const isContaminated = Math.random() < 0.2; // 20% chance of contamination for demo
+  async ({ scenario }) => {
+    // Faked response for demo purposes, based on scenario
+    const isContaminated = scenario === 'contamination';
     
     if (isContaminated) {
       return {
         colorBalance: 'Needs Attention',
         estimatedBiomassDensity: 120.5,
         smellDetection: 'Contaminated',
-        colorBalanceConfidence: Math.random() * 15 + 80, // 80-95%
-        biomassDensityConfidence: Math.random() * 10 + 85, // 85-95%
-        smellDetectionConfidence: Math.random() * 20 + 75, // 75-95%
+        colorBalanceConfidence: 91.3,
+        biomassDensityConfidence: 89.1,
+        smellDetectionConfidence: 94.6,
       };
     }
 
+    const isRapidGrowth = scenario === 'rapid-growth';
+
     return {
       colorBalance: 'Healthy',
-      estimatedBiomassDensity: 85.3,
+      estimatedBiomassDensity: isRapidGrowth ? 150.2 : 85.3,
       smellDetection: 'Normal',
-      colorBalanceConfidence: Math.random() * 10 + 90, // 90-100%
-      biomassDensityConfidence: Math.random() * 5 + 95, // 95-100%
-      smellDetectionConfidence: Math.random() * 5 + 95, // 95-100%
+      colorBalanceConfidence: 98.2,
+      biomassDensityConfidence: 96.5,
+      smellDetectionConfidence: 99.1,
     };
   }
 );
