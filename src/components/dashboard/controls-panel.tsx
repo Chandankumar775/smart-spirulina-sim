@@ -1,6 +1,6 @@
 'use client';
 
-import { Mixer, Lightbulb, LightbulbOff, Droplets, Combine, SlidersHorizontal } from 'lucide-react';
+import { Layers, Lightbulb, LightbulbOff, Droplets, Combine, SlidersHorizontal } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useSimulation } from '@/hooks/use-simulation';
@@ -41,7 +41,7 @@ export default function ControlsPanel() {
             onClick={() => handleControlClick('mixer')}
             className="flex flex-col h-20 gap-1"
           >
-            <Mixer className="h-6 w-6" />
+            <Layers className="h-6 w-6" />
             <span>Mixer</span>
             <span className={cn("text-xs", controls.mixerOn ? "text-primary-foreground/80" : "text-muted-foreground")}>
               {controls.mixerOn ? 'ON' : 'OFF'}
