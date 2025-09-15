@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Line, LineChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useSimulation } from '@/hooks/use-simulation';
@@ -21,6 +21,11 @@ export default function AnalyticsPanel() {
   const { state } = useSimulation();
   const [activeChart, setActiveChart] = useState<MetricKey>('turbidity');
   const [timeRange, setTimeRange] = useState('1h');
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const chartData = useMemo(() => {
     const now = Date.now();
@@ -48,14 +53,14 @@ export default function AnalyticsPanel() {
     return [...filtered, prediction];
   }, [state.metricsHistory, state.settings.growthRate, timeRange]);
   
-  if (!state.isRunning) {
+  if (!isClient || !state.isRunning) {
     return (
        <Card>
         <CardHeader>
           <CardTitle>Analytics</CardTitle>
           <CardDescription>Start the simulation to see historical data.</CardDescription>
         </CardHeader>
-        <CardContent className="h-96 flex items-center justify-center">
+        <CardContent className="h-[444px] flex items-center justify-center">
             <p className="text-muted-foreground">No data available</p>
         </CardContent>
        </Card>
