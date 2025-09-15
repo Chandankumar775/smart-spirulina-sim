@@ -8,14 +8,14 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const metricConfig = {
-  waterLevel: { label: 'Water Level', icon: Droplets, unit: '%' },
+  growthScore: { label: 'Growth Score', icon: Leaf, unit: '%' },
   ph: { label: 'pH Level', icon: TestTube2, unit: '' },
-  dissolvedOxygen: { label: 'Dissolved Oxygen', icon: Wind, unit: 'mg/L' },
   turbidity: { label: 'Turbidity', icon: Activity, unit: 'NTU' },
   temperature: { label: 'Temperature', icon: Thermometer, unit: '°C' },
+  dissolvedOxygen: { label: 'Dissolved Oxygen', icon: Wind, unit: 'mg/L' },
   lightIntensity: { label: 'Light Intensity', icon: Sun, unit: 'lux' },
   odorIndex: { label: 'Odor Index', icon: Wind, unit: '' },
-  growthScore: { label: 'Growth Score', icon: Leaf, unit: '%' },
+  waterLevel: { label: 'Water Level', icon: Droplets, unit: '%' },
 };
 
 type MetricKey = keyof typeof metricConfig;
@@ -43,7 +43,7 @@ export default function LiveMetrics() {
       case 'odorIndex':
         return value > 70 ? 'error' : value > 50 ? 'warning' : 'ok';
       case 'growthScore':
-        return value < 50 ? 'warning' : 'ok';
+        return value < 50 ? 'warning' : value > 90 ? 'ok' : 'ok';
       default:
         return 'ok';
     }
@@ -58,7 +58,7 @@ export default function LiveMetrics() {
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {Object.keys(metricConfig).map((key) => (
-                <div key={key} className="p-4 border rounded-lg">
+                <div key={key} className="p-4 border rounded-lg bg-card shadow-sm">
                     <div className="flex items-center justify-between pb-2">
                         <Skeleton className="h-4 w-2/3" />
                         <Skeleton className="h-4 w-4" />
@@ -73,14 +73,16 @@ export default function LiveMetrics() {
     );
   }
 
+  const metricKeys = Object.keys(metricConfig) as MetricKey[];
+
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-      {Object.entries(state.currentMetrics).map(([key, value]) => {
-        if (key === 'timestamp') return null;
-        const config = metricConfig[key as MetricKey];
-        if (!config) return null;
+      {metricKeys.map((key) => {
+        const value = state.currentMetrics[key];
+        if (value === undefined) return null;
         
-        const history = state.metricsHistory.map(h => ({ value: h[key as MetricKey] as number, timestamp: h.timestamp }));
+        const config = metricConfig[key];
+        const history = state.metricsHistory.map(h => ({ value: h[key] as number, timestamp: h.timestamp }));
 
         return (
           <MetricCard
@@ -89,8 +91,9 @@ export default function LiveMetrics() {
             value={value}
             unit={config.unit}
             icon={config.icon}
-            status={getMetricStatus(key as MetricKey, value)}
+            status={getMetricStatus(key, value)}
             data={history}
+            className={key === 'growthScore' ? 'lg:col-span-2' : ''}
           />
         );
       })}

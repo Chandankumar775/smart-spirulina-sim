@@ -12,6 +12,7 @@ type MetricCardProps = {
   icon: React.ForwardRefExoticComponent<Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>>;
   status: 'ok' | 'warning' | 'error';
   data: { value: number; timestamp: number }[];
+  className?: string;
 };
 
 const statusColors = {
@@ -26,11 +27,11 @@ const sparklineColors = {
   error: 'hsl(var(--destructive))',
 };
 
-export default function MetricCard({ label, value, unit, icon: Icon, status, data }: MetricCardProps) {
+export default function MetricCard({ label, value, unit, icon: Icon, status, data, className }: MetricCardProps) {
   const latestData = data.slice(-30);
 
   return (
-    <Card>
+    <Card className={cn("transition-all duration-300 hover:shadow-lg hover:-translate-y-1", className)}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{label}</CardTitle>
         <Icon className="h-4 w-4 text-muted-foreground" />
