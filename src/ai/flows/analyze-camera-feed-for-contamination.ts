@@ -33,21 +33,6 @@ export async function analyzeCameraFeedForContamination(input: AnalyzeCameraFeed
   return analyzeCameraFeedForContaminationFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'analyzeCameraFeedForContaminationPrompt',
-  input: {schema: AnalyzeCameraFeedInputSchema},
-  output: {schema: AnalyzeCameraFeedOutputSchema},
-  prompt: `You are an AI assistant that analyzes a camera feed of a spirulina culture to detect contamination and estimate biomass density.
-
-  Analyze the following camera feed:
-  {{media url=photoDataUri}}
-
-  Based on the image, determine the color balance (Healthy or Needs Attention), estimate the biomass density (numeric value), and detect the smell (Normal or Contaminated).
-  Also, provide confidence scores (0-100%) for each of the three metrics.
-
-  Make sure the output strictly adheres to the AnalyzeCameraFeedOutputSchema.`,
-});
-
 const analyzeCameraFeedForContaminationFlow = ai.defineFlow(
   {
     name: 'analyzeCameraFeedForContaminationFlow',
@@ -55,7 +40,27 @@ const analyzeCameraFeedForContaminationFlow = ai.defineFlow(
     outputSchema: AnalyzeCameraFeedOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    return output!;
+    // Faked response for demo purposes
+    const isContaminated = Math.random() < 0.2; // 20% chance of contamination for demo
+    
+    if (isContaminated) {
+      return {
+        colorBalance: 'Needs Attention',
+        estimatedBiomassDensity: 120.5,
+        smellDetection: 'Contaminated',
+        colorBalanceConfidence: Math.random() * 15 + 80, // 80-95%
+        biomassDensityConfidence: Math.random() * 10 + 85, // 85-95%
+        smellDetectionConfidence: Math.random() * 20 + 75, // 75-95%
+      };
+    }
+
+    return {
+      colorBalance: 'Healthy',
+      estimatedBiomassDensity: 85.3,
+      smellDetection: 'Normal',
+      colorBalanceConfidence: Math.random() * 10 + 90, // 90-100%
+      biomassDensityConfidence: Math.random() * 5 + 95, // 95-100%
+      smellDetectionConfidence: Math.random() * 5 + 95, // 95-100%
+    };
   }
 );
