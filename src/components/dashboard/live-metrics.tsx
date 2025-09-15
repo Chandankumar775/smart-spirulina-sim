@@ -1,9 +1,11 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { Droplets, Thermometer, Sun, Wind, TestTube2, Percent, Activity, Leaf } from 'lucide-react';
 import MetricCard from './metric-card';
 import { useSimulation } from '@/hooks/use-simulation';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const metricConfig = {
   waterLevel: { label: 'Water Level', icon: Droplets, unit: '%' },
@@ -20,19 +22,11 @@ type MetricKey = keyof typeof metricConfig;
 
 export default function LiveMetrics() {
   const { state } = useSimulation();
+  const [isClient, setIsClient] = useState(false);
 
-  if (!state.isRunning) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Live Metrics</CardTitle>
-        </CardHeader>
-        <CardContent className="h-[calc(100%-4rem)] flex items-center justify-center text-muted-foreground">
-          <p>Simulation paused. Click "Start Demo" on the home page.</p>
-        </CardContent>
-      </Card>
-    );
-  }
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const getMetricStatus = (key: MetricKey, value: number) => {
     switch (key) {
@@ -54,6 +48,30 @@ export default function LiveMetrics() {
         return 'ok';
     }
   };
+
+  if (!isClient || !state.isRunning) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Live Metrics</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {Object.keys(metricConfig).map((key) => (
+                <div key={key} className="p-4 border rounded-lg">
+                    <div className="flex items-center justify-between pb-2">
+                        <Skeleton className="h-4 w-2/3" />
+                        <Skeleton className="h-4 w-4" />
+                    </div>
+                    <Skeleton className="h-6 w-1/3 mb-1" />
+                    <Skeleton className="h-3 w-1/4" />
+                </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
