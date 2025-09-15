@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { Line, LineChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useSimulation } from '@/hooks/use-simulation';
-import { ChartTooltipContent } from '@/components/ui/chart';
+import { ChartTooltipContent, ChartContainer } from '@/components/ui/chart';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 type MetricKey = 'ph' | 'dissolvedOxygen' | 'turbidity' | 'waterLevel' | 'temperature';
@@ -19,8 +19,8 @@ const chartConfigs: Record<MetricKey, { name: string; color: string; predColor: 
 
 export default function AnalyticsPanel() {
   const { state } = useSimulation();
-  const [timeRange, setTimeRange] = useState('1h');
   const [activeChart, setActiveChart] = useState<MetricKey>('turbidity');
+  const [timeRange, setTimeRange] = useState('1h');
 
   const chartData = useMemo(() => {
     const now = Date.now();
@@ -64,50 +64,64 @@ export default function AnalyticsPanel() {
 
   const renderChart = (metric: MetricKey) => (
     <div className="h-72">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-          <XAxis
-            dataKey="timestamp"
-            tickFormatter={(time) => new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            stroke="hsl(var(--muted-foreground))"
-            fontSize={12}
-            tickLine={false}
-            axisLine={false}
-          />
-          <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} domain={['dataMin - 1', 'dataMax + 1']} />
-          <Tooltip
-            content={<ChartTooltipContent
-                formatter={(value, name) => (
-                    <div className="flex items-center justify-between w-full">
-                        <span>{name === `${metric}_pred` ? 'Prediction' : chartConfigs[metric].name}</span>
-                        <span className="font-bold ml-4">{Number(value).toFixed(2)}</span>
-                    </div>
-                )}
-                labelFormatter={(label) => new Date(label).toLocaleString()}
-             />}
-            cursor={{ fill: 'hsl(var(--accent) / 0.1)' }}
-          />
-          <Legend />
-          <Line
-            type="monotone"
-            dataKey={metric}
-            name={chartConfigs[metric].name}
-            stroke={chartConfigs[metric].color}
-            strokeWidth={2}
-            dot={false}
-          />
-          <Line
-            type="monotone"
-            dataKey={`${metric}_pred`}
-            name="Prediction"
-            stroke={chartConfigs[metric].predColor}
-            strokeWidth={2}
-            strokeDasharray="5 5"
-            dot={false}
-          />
-        </LineChart>
-      </ResponsiveContainer>
+        <ChartContainer
+            config={{
+                [metric]: {
+                    label: chartConfigs[metric].name,
+                    color: chartConfigs[metric].color,
+                },
+                [`${metric}_pred`]: {
+                    label: 'Prediction',
+                    color: chartConfigs[metric].predColor,
+                },
+            }}
+            className="h-full w-full"
+        >
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis
+                dataKey="timestamp"
+                tickFormatter={(time) => new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                stroke="hsl(var(--muted-foreground))"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+              />
+              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} domain={['dataMin - 1', 'dataMax + 1']} />
+              <Tooltip
+                content={<ChartTooltipContent
+                    formatter={(value, name) => (
+                        <div className="flex items-center justify-between w-full">
+                            <span>{name === `${metric}_pred` ? 'Prediction' : chartConfigs[metric].name}</span>
+                            <span className="font-bold ml-4">{Number(value).toFixed(2)}</span>
+                        </div>
+                    )}
+                    labelFormatter={(label) => new Date(label).toLocaleString()}
+                />}
+                cursor={{ fill: 'hsl(var(--accent) / 0.1)' }}
+              />
+              <Legend />
+              <Line
+                type="monotone"
+                dataKey={metric}
+                name={chartConfigs[metric].name}
+                stroke={chartConfigs[metric].color}
+                strokeWidth={2}
+                dot={false}
+              />
+              <Line
+                type="monotone"
+                dataKey={`${metric}_pred`}
+                name="Prediction"
+                stroke={chartConfigs[metric].predColor}
+                strokeWidth={2}
+                strokeDasharray="5 5"
+                dot={false}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+      </ChartContainer>
     </div>
   );
   
