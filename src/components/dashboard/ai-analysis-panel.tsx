@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
-import { Bot, CheckCircle, AlertTriangle, Zap, Percent, Upload, Camera } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Bot, CheckCircle, AlertTriangle, Zap, Percent, Upload, Camera, FlaskConical, Droplets, Microscope, FileText } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { analyzeCameraFeedForContamination, AnalyzeCameraFeedOutput } from '@/ai/flows/analyze-camera-feed-for-contamination';
@@ -11,8 +11,8 @@ import { useSimulation } from '@/hooks/use-simulation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Separator } from '../ui/separator';
 
 
 export default function AiAnalysisPanel() {
@@ -26,8 +26,6 @@ export default function AiAnalysisPanel() {
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
 
   const { toast } = useToast();
-
-  const spirulinaImage = PlaceHolderImages.find(p => p.id === 'spirulina-feed');
 
   useEffect(() => {
     const getCameraPermission = async () => {
@@ -113,21 +111,18 @@ export default function AiAnalysisPanel() {
   };
 
 
-  const isHealthy = analysis?.colorBalance === 'Healthy' && analysis?.smellDetection === 'Normal';
+  const isHealthy = analysis?.algaeHealth === 'Optimal' && analysis?.contaminationType === 'None';
   const borderColor = analysis ? (isHealthy ? 'border-primary' : 'border-destructive') : 'border-border';
 
-  const renderAnalysisItem = (label: string, value: string | number, confidence: number, healthyValue: string) => {
-    const isItemHealthy = String(value) === healthyValue;
+  const renderAnalysisItem = (Icon: React.ElementType, label: string, value: string | number, healthyValues: (string|number)[]) => {
+    const isItemHealthy = healthyValues.includes(String(value));
     return (
       <div className="flex items-center justify-between text-sm">
         <div className="flex items-center gap-2 text-muted-foreground">
-          {isItemHealthy ? <CheckCircle className="h-4 w-4 text-primary" /> : <AlertTriangle className="h-4 w-4 text-destructive" />}
+          <Icon className={cn("h-4 w-4", isItemHealthy ? 'text-primary' : 'text-destructive')} />
           <span>{label}</span>
         </div>
-        <div className="flex items-center gap-2">
-          <Badge variant={isItemHealthy ? 'secondary' : 'destructive'}>{value}</Badge>
-          <span className="text-xs text-muted-foreground font-mono">({confidence.toFixed(0)}%)</span>
-        </div>
+        <Badge variant={isItemHealthy ? 'secondary' : 'destructive'}>{value}</Badge>
       </div>
     );
   }
@@ -185,32 +180,49 @@ export default function AiAnalysisPanel() {
           </Button>
 
           {isLoading && !analysis ? (
-            <>
+            <div className='space-y-2 pt-2'>
               <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-6 w-2/3" />
               <Skeleton className="h-6 w-full" />
-              <Skeleton className="h-6 w-full" />
-            </>
+            </div>
           ) : error ? (
-            <div className="text-destructive text-sm flex items-center gap-2">
+            <div className="text-destructive text-sm flex items-center gap-2 pt-2">
               <AlertTriangle className="h-4 w-4"/>
               {error}
             </div>
+          ) : analysis && imagePreview ? ( // only show full report on manual upload
+            <div className="space-y-4 pt-4">
+                <CardTitle className="text-lg">AI Analysis Report</CardTitle>
+                <div className="grid gap-3">
+                    {renderAnalysisItem(CheckCircle, 'Overall Health', analysis.algaeHealth, ['Optimal'])}
+                    {renderAnalysisItem(FlaskConical, 'Color Balance', analysis.colorBalance, ['Healthy'])}
+                    {renderAnalysisItem(Droplets, 'Water Clarity', analysis.waterClarity, ['Clear'])}
+                    {renderAnalysisItem(Microscope, 'Contamination', analysis.contaminationType, ['None'])}
+                    <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                        <Percent className="h-4 w-4 text-muted-foreground" />
+                        <span>Biomass Density</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                        <Badge variant="secondary">{analysis.estimatedBiomassDensity.toFixed(2)}</Badge>
+                        <span className="text-xs text-muted-foreground font-mono">({analysis.biomassDensityConfidence.toFixed(0)}%)</span>
+                        </div>
+                    </div>
+                </div>
+                <Separator />
+                 <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                       <FileText className="h-4 w-4" />
+                       <h4 className="font-medium">Recommendation</h4>
+                    </div>
+                    <p className="text-sm text-foreground/80 p-2 bg-accent/50 rounded-md">{analysis.recommendation}</p>
+                </div>
+            </div>
           ) : analysis ? (
-            <>
-              {renderAnalysisItem('Color Balance', analysis.colorBalance, analysis.colorBalanceConfidence, 'Healthy')}
-              {renderAnalysisItem('Smell Detection', analysis.smellDetection, analysis.smellDetectionConfidence, 'Normal')}
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Percent className="h-4 w-4 text-muted-foreground" />
-                  <span>Biomass Density</span>
-                </div>
-                <div className="flex items-center gap-2">
-                   <Badge variant="secondary">{analysis.estimatedBiomassDensity.toFixed(2)}</Badge>
-                   <span className="text-xs text-muted-foreground font-mono">({analysis.biomassDensityConfidence.toFixed(0)}%)</span>
-                </div>
-              </div>
-            </>
-          ) : null}
+            <div className='pt-2 text-sm text-center text-muted-foreground'>
+                Upload an image to generate a detailed report.
+            </div>
+          ): null}
         </div>
       </CardContent>
     </Card>
