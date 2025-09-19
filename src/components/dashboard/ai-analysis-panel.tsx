@@ -62,10 +62,12 @@ export default function AiAnalysisPanel() {
       const result = await analyzeCameraFeedForContamination({ photoDataUri: imageDataUri || "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7", scenario });
       setAnalysis(result);
 
-      if (result.colorBalance === 'Needs Attention' || result.smellDetection === 'Contaminated') {
-        dispatch({ type: 'ADD_LOG', payload: { type: 'alert', message: `AI detected contamination issue. Smell: ${result.smellDetection}, Color: ${result.colorBalance}` } });
-      } else {
-        dispatch({ type: 'ADD_LOG', payload: { type: 'info', message: 'AI check completed: System healthy.' } });
+      if (!imageDataUri) { // Only log background checks
+        if (result.colorBalance === 'Needs Attention' || result.smellDetection === 'Contaminated') {
+            dispatch({ type: 'ADD_LOG', payload: { type: 'alert', message: `AI detected contamination issue. Smell: ${result.smellDetection}, Color: ${result.colorBalance}` } });
+        } else {
+            dispatch({ type: 'ADD_LOG', payload: { type: 'info', message: 'AI check completed: System healthy.' } });
+        }
       }
 
     } catch (e) {
@@ -79,7 +81,9 @@ export default function AiAnalysisPanel() {
 
   useEffect(() => {
     if (isRunning) {
-      runAnalysis();
+      // Run initial automatic analysis
+      runAnalysis(); 
+      // Set up interval for subsequent automatic analyses
       const interval = setInterval(() => runAnalysis(), settings.aiCheckFrequency * 1000);
       return () => clearInterval(interval);
     }
@@ -87,6 +91,32 @@ export default function AiAnalysisPanel() {
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
+  };
+  
+  const handleSnapshotClick = () => {
+    if (hasCameraPermission && videoRef.current) {
+      const canvas = document.createElement('canvas');
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+        const dataUri = canvas.toDataURL('image/jpeg');
+        setImagePreview(dataUri);
+        runAnalysis(dataUri);
+        dispatch({ type: 'ADD_LOG', payload: { type: 'info', message: 'Manual analysis initiated from camera snapshot.' } });
+        toast({
+          title: 'Snapshot Captured!',
+          description: 'Analyzing the captured image...',
+        });
+      }
+    } else {
+        toast({
+            variant: 'destructive',
+            title: 'Camera Not Ready',
+            description: 'Cannot take a snapshot without camera permission.',
+        });
+    }
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -112,7 +142,7 @@ export default function AiAnalysisPanel() {
 
 
   const isHealthy = analysis?.algaeHealth === 'Optimal' && analysis?.contaminationType === 'None';
-  const borderColor = analysis ? (isHealthy ? 'border-primary' : 'border-destructive') : 'border-border';
+  const borderColor = analysis && imagePreview ? (isHealthy ? 'border-primary' : 'border-destructive') : 'border-border';
 
   const renderAnalysisItem = (Icon: React.ElementType, label: string, value: string | number, healthyValues: (string|number)[]) => {
     const isItemHealthy = healthyValues.includes(String(value));
@@ -135,35 +165,35 @@ export default function AiAnalysisPanel() {
       </CardHeader>
       <CardContent>
         <div className="aspect-video w-full overflow-hidden rounded-md mb-4 relative bg-muted flex items-center justify-center">
-          <video ref={videoRef} className={cn("w-full aspect-video rounded-md", hasCameraPermission ? "block" : "hidden")} autoPlay muted />
-          {hasCameraPermission === false && (
-             <div className="p-4">
-                <Alert variant="destructive">
-                    <Camera className="h-4 w-4"/>
-                    <AlertTitle>Camera Access Required</AlertTitle>
-                    <AlertDescription>
-                        Please allow camera access in your browser to use this feature. You can still upload an image.
-                    </AlertDescription>
-                </Alert>
-             </div>
-          )}
-           {hasCameraPermission === null && (
-             <Zap className="h-8 w-8 text-primary animate-pulse" />
-          )}
-
-          {isLoading && <div className="absolute inset-0 bg-background/50 flex items-center justify-center"><Zap className="h-8 w-8 text-primary animate-pulse" /></div>}
-        </div>
-        
-        {imagePreview && (
-             <div className="aspect-video w-full overflow-hidden rounded-md mb-4 relative bg-muted">
+            {imagePreview ? (
                 <Image 
                     src={imagePreview} 
-                    alt="Uploaded spirulina tank" 
+                    alt="Spirulina tank analysis" 
                     fill 
                     className="object-cover" 
                 />
-            </div>
-        )}
+            ) : (
+                <>
+                    <video ref={videoRef} className={cn("w-full aspect-video rounded-md", hasCameraPermission ? "block" : "hidden")} autoPlay muted playsInline />
+                    {hasCameraPermission === false && (
+                        <div className="p-4">
+                            <Alert variant="destructive">
+                                <Camera className="h-4 w-4"/>
+                                <AlertTitle>Camera Access Required</AlertTitle>
+                                <AlertDescription>
+                                    Please allow camera access to use this feature. You can still upload an image.
+                                </AlertDescription>
+                            </Alert>
+                        </div>
+                    )}
+                    {hasCameraPermission === null && (
+                        <Zap className="h-8 w-8 text-primary animate-pulse" />
+                    )}
+                </>
+            )}
+
+          {isLoading && <div className="absolute inset-0 bg-background/50 flex items-center justify-center"><Zap className="h-8 w-8 text-primary animate-pulse" /></div>}
+        </div>
 
         <input
             type="file"
@@ -174,11 +204,17 @@ export default function AiAnalysisPanel() {
         />
 
         <div className="space-y-3">
-           <Button onClick={handleUploadClick} disabled={isLoading} className="w-full">
-            <Upload className="h-4 w-4 mr-2" />
-            Upload Tank Image
-          </Button>
-
+           <div className="grid grid-cols-2 gap-2">
+                <Button onClick={handleSnapshotClick} disabled={isLoading || hasCameraPermission !== true}>
+                    <Camera className="h-4 w-4 mr-2" />
+                    Snapshot
+                </Button>
+                <Button onClick={handleUploadClick} variant="outline" disabled={isLoading}>
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload Image
+                </Button>
+           </div>
+           
           {isLoading && !analysis ? (
             <div className='space-y-2 pt-2'>
               <Skeleton className="h-6 w-full" />
@@ -220,7 +256,7 @@ export default function AiAnalysisPanel() {
             </div>
           ) : analysis ? (
             <div className='pt-2 text-sm text-center text-muted-foreground'>
-                Upload an image to generate a detailed report.
+                Take a snapshot or upload an image to generate a detailed report.
             </div>
           ): null}
         </div>
