@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
-import { Bot, CheckCircle, AlertTriangle, Zap, Percent, Upload, Camera, FlaskConical, Droplets, Microscope, FileText } from 'lucide-react';
+import { Bot, CheckCircle, AlertTriangle, Zap, Percent, Upload, Camera, FlaskConical, Droplets, Microscope, FileText, Palette, FileDigit, BrainCircuit } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '../ui/separator';
+import ConfidenceGauge from './confidence-gauge';
 
 
 export default function AiAnalysisPanel() {
@@ -147,10 +148,10 @@ export default function AiAnalysisPanel() {
   const renderAnalysisItem = (Icon: React.ElementType, label: string, value: string | number, healthyValues: (string|number)[]) => {
     const isItemHealthy = healthyValues.includes(String(value));
     return (
-      <div className="flex items-center justify-between text-sm">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Icon className={cn("h-4 w-4", isItemHealthy ? 'text-primary' : 'text-destructive')} />
-          <span>{label}</span>
+      <div className="flex items-center justify-between text-sm p-3 bg-muted/50 rounded-lg">
+        <div className="flex items-center gap-3">
+          <Icon className={cn("h-5 w-5", isItemHealthy ? 'text-primary' : 'text-destructive')} />
+          <span className="font-medium text-foreground">{label}</span>
         </div>
         <Badge variant={isItemHealthy ? 'secondary' : 'destructive'}>{value}</Badge>
       </div>
@@ -227,33 +228,49 @@ export default function AiAnalysisPanel() {
               {error}
             </div>
           ) : analysis && imagePreview ? ( // only show full report on manual upload
-            <div className="space-y-4 pt-4">
-                <CardTitle className="text-lg">AI Analysis Report</CardTitle>
-                <div className="grid gap-3">
-                    {renderAnalysisItem(CheckCircle, 'Overall Health', analysis.algaeHealth, ['Optimal'])}
-                    {renderAnalysisItem(FlaskConical, 'Color Balance', analysis.colorBalance, ['Healthy'])}
-                    {renderAnalysisItem(Droplets, 'Water Clarity', analysis.waterClarity, ['Clear'])}
-                    {renderAnalysisItem(Microscope, 'Contamination', analysis.contaminationType, ['None'])}
-                    <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                        <Percent className="h-4 w-4 text-muted-foreground" />
-                        <span>Biomass Density</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                        <Badge variant="secondary">{analysis.estimatedBiomassDensity.toFixed(2)}</Badge>
-                        <span className="text-xs text-muted-foreground font-mono">({analysis.biomassDensityConfidence.toFixed(0)}%)</span>
+            <Card className="mt-4 animate-fade-in-up">
+                <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2"><BrainCircuit className="h-5 w-5 text-primary"/> AI Analysis Report</CardTitle>
+                    <CardDescription>Detailed results from the image analysis.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <div className="text-center">
+                        <Badge variant={isHealthy ? 'default' : 'destructive'} className="text-base px-4 py-1">
+                            {isHealthy ? <CheckCircle className="h-4 w-4 mr-2"/> : <AlertTriangle className="h-4 w-4 mr-2" />}
+                            Overall Health: {analysis.algaeHealth}
+                        </Badge>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                       <ConfidenceGauge value={analysis.colorBalanceConfidence} label="Color" />
+                       <ConfidenceGauge value={analysis.biomassDensityConfidence} label="Biomass" />
+                       <ConfidenceGauge value={analysis.smellDetectionConfidence} label="Odor" />
+                    </div>
+
+                    <div className="grid gap-3">
+                        {renderAnalysisItem(Palette, 'Color Balance', analysis.colorBalance, ['Healthy'])}
+                        {renderAnalysisItem(Droplets, 'Water Clarity', analysis.waterClarity, ['Clear'])}
+                        {renderAnalysisItem(Microscope, 'Contamination', analysis.contaminationType, ['None'])}
+                         <div className="flex items-center justify-between text-sm p-3 bg-muted/50 rounded-lg">
+                            <div className="flex items-center gap-3">
+                                <FileDigit className="h-5 w-5 text-muted-foreground" />
+                                <span className="font-medium text-foreground">Biomass Density</span>
+                            </div>
+                            <Badge variant="secondary">{analysis.estimatedBiomassDensity.toFixed(2)} g/L</Badge>
                         </div>
                     </div>
-                </div>
-                <Separator />
-                 <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                       <FileText className="h-4 w-4" />
-                       <h4 className="font-medium">Recommendation</h4>
+
+                    <Separator />
+
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-sm">
+                           <FileText className="h-4 w-4 text-muted-foreground" />
+                           <h4 className="font-medium text-foreground">Recommendation</h4>
+                        </div>
+                        <p className="text-sm text-foreground/80 p-3 bg-accent rounded-md border border-primary/20">{analysis.recommendation}</p>
                     </div>
-                    <p className="text-sm text-foreground/80 p-2 bg-accent/50 rounded-md">{analysis.recommendation}</p>
-                </div>
-            </div>
+                </CardContent>
+            </Card>
           ) : analysis ? (
             <div className='pt-2 text-sm text-center text-muted-foreground'>
                 Take a snapshot or upload an image to generate a detailed report.
