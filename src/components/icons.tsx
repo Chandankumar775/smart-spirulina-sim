@@ -46,6 +46,27 @@ export const SystemDiagramIcon = ({ className, waterLevel = 80, cultureColor = '
     
     return (
         <svg viewBox="0 0 400 300" className={cn(className)}>
+            <defs>
+                <linearGradient id="tankGradient" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#d1d5db" />
+                    <stop offset="50%" stopColor="#f9fafb" />
+                    <stop offset="100%" stopColor="#d1d5db" />
+                </linearGradient>
+                <linearGradient id="pipeGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#e5e7eb" />
+                    <stop offset="100%" stopColor="#9ca3af" />
+                </linearGradient>
+                <clipPath id="tankClip">
+                    <rect x="100" y="50" width="200" height="200" rx="10"/>
+                </clipPath>
+                 <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                    <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+            </defs>
             <style>
                 {`
                 @keyframes spin {
@@ -53,43 +74,73 @@ export const SystemDiagramIcon = ({ className, waterLevel = 80, cultureColor = '
                     to { transform: rotate(360deg); }
                 }
                 .mixer-blade {
-                    transform-origin: center;
-                    animation: spin 3s linear infinite;
+                    transform-origin: 200px 182px;
+                    animation: spin 2s linear infinite;
                 }
                 .light-glow {
-                   filter: drop-shadow(0 0 8px hsl(var(--primary)));
+                   filter: url(#glow);
+                }
+                 @keyframes wave {
+                    0% { transform: translateX(0); }
+                    100% { transform: translateX(-40px); }
+                }
+                .water-wave {
+                    animation: wave 1.5s linear infinite;
+                }
+                @keyframes bubble {
+                  0% { transform: translateY(0); opacity: 0; }
+                  50% { opacity: 0.7; }
+                  100% { transform: translateY(-${waterHeight * 0.8}px); opacity: 0; }
+                }
+                .bubble {
+                  fill: white;
+                  opacity: 0;
+                  animation-name: bubble;
+                  animation-duration: 4s;
+                  animation-iteration-count: infinite;
+                  animation-timing-function: linear;
                 }
                 `}
             </style>
             
             {/* Main Tank Structure */}
-            <rect x="100" y="50" width="200" height="200" rx="10" fill="#E2E8F0" stroke="#94A3B8" strokeWidth="2"/>
-            <rect x="90" y="40" width="220" height="20" rx="5" fill="#CBD5E1" />
-            <rect x="90" y="250" width="220" height="10" rx="5" fill="#CBD5E1" />
+            <rect x="100" y="50" width="200" height="200" rx="10" fill="url(#tankGradient)" stroke="#94A3B8" strokeWidth="1"/>
+            <rect x="90" y="40" width="220" height="20" rx="5" fill="url(#pipeGradient)" />
+            <rect x="90" y="250" width="220" height="10" rx="5" fill="url(#pipeGradient)" />
 
             {/* Water/Culture */}
             <g clipPath="url(#tankClip)">
-                <rect x="100" y={waterY} width="200" height={waterHeight} style={{ fill: cultureColor, transition: 'y 0.5s ease, height 0.5s ease, fill 0.5s ease' }} />
+                 <rect x="100" y={waterY} width="200" height={waterHeight} style={{ fill: cultureColor, transition: 'y 0.5s ease, height 0.5s ease, fill 0.5s ease' }} opacity="0.8" />
+                {/* Wave Animation */}
+                <path d={`M 100 ${waterY} q 20 -10 40 0 t 40 0 t 40 0 t 40 0 t 40 0 V 250 H 100 Z`} fill={cultureColor} style={{transition: 'd 0.5s ease, fill 0.5s ease'}} className="water-wave" />
+                <path d={`M 80 ${waterY} q 20 10 40 0 t 40 0 t 40 0 t 40 0 t 40 0 V 250 H 80 Z`} fill={cultureColor} opacity="0.5" style={{transition: 'd 0.5s ease, fill 0.5s ease'}} className="water-wave" transform="translate(20, 2)" />
+                
+                {/* Bubbles */}
+                <g style={{ transition: 'transform 0.5s ease' }} transform={`translate(0, ${waterY + waterHeight - 10})`}>
+                    <circle cx="130" r="3" className="bubble" style={{ animationDelay: '0s' }} />
+                    <circle cx="160" r="2" className="bubble" style={{ animationDelay: '1s' }} />
+                    <circle cx="200" r="4" className="bubble" style={{ animationDelay: '0.5s' }} />
+                    <circle cx="240" r="3" className="bubble" style={{ animationDelay: '2s' }} />
+                    <circle cx="270" r="2.5" className="bubble" style={{ animationDelay: '3s' }} />
+                </g>
             </g>
-            <clipPath id="tankClip">
-                <rect x="100" y="50" width="200" height="200" rx="10"/>
-            </clipPath>
 
             {/* Pipes */}
-            <rect x="300" y="100" width="50" height="15" fill="#CBD5E1" stroke="#94A3B8" strokeWidth="1.5" />
-            <path d="M350 107.5 H 370 V 220 H 300" stroke="#CBD5E1" strokeWidth="15" fill="none" />
+            <rect x="300" y="100" width="50" height="15" fill="url(#pipeGradient)" stroke="#94A3B8" strokeWidth="1" />
+            <path d="M350 107.5 H 370 V 220 H 300" strokeWidth="15" fill="none" stroke="url(#pipeGradient)" />
              <path d="M350 107.5 H 370 V 220 H 300" stroke="#94A3B8" strokeWidth="1.5" fill="none" />
 
-            <rect x="50" y="100" width="50" height="15" fill="#CBD5E1" stroke="#94A3B8" strokeWidth="1.5" />
-            <path d="M50 107.5 H 30 V 150 H 100" stroke="#CBD5E1" strokeWidth="15" fill="none" />
+            <rect x="50" y="100" width="50" height="15" fill="url(#pipeGradient)" stroke="#94A3B8" strokeWidth="1" />
+            <path d="M50 107.5 H 30 V 150 H 100" strokeWidth="15" fill="none" stroke="url(#pipeGradient)" />
              <path d="M50 107.5 H 30 V 150 H 100" stroke="#94A3B8" strokeWidth="1.5" fill="none" />
             
             {/* Mixer */}
-            <line x1="200" y1="50" x2="200" y2="180" stroke="#94A3B8" strokeWidth="3" />
+            <line x1="200" y1="50" x2="200" y2="180" stroke="#A0AEC0" strokeWidth="4" />
             <g className={cn(mixerOn ? "mixer-blade": "")}>
-                <rect x="185" y="180" width="30" height="4" rx="2" fill="#94A3B8" />
-                <rect x="198" y="175" width="4" height="30" rx="2" fill="#94A3B8" />
+                 <path d="M200,182 L170,178 L200,182 L230,178 Z" fill="#718096"/>
+                 <path d="M200,182 L170,186 L200,182 L230,186 Z" fill="#718096"/>
             </g>
+            <circle cx="200" cy="182" r="5" fill="#4A5568" />
             
             {/* Light */}
             <g className={cn(lightOn ? 'light-glow' : '')} style={{transition: 'filter 0.3s ease'}}>
