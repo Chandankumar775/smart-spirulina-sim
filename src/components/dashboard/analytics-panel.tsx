@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
-import { Line, LineChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { Area, AreaChart, Line, LineChart, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useSimulation } from '@/hooks/use-simulation';
 import { ChartTooltipContent, ChartContainer } from '@/components/ui/chart';
@@ -81,7 +81,13 @@ export default function AnalyticsPanel() {
             className="h-full w-full"
         >
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+            <AreaChart data={chartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+               <defs>
+                  <linearGradient id={`color-${metric}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={chartConfigs[metric].color} stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor={chartConfigs[metric].color} stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis
                 dataKey="timestamp"
@@ -105,11 +111,12 @@ export default function AnalyticsPanel() {
                 cursor={{ fill: 'hsl(var(--accent) / 0.1)' }}
               />
               <Legend />
-              <Line
+              <Area
                 type="monotone"
                 dataKey={metric}
                 name={chartConfigs[metric].name}
                 stroke={chartConfigs[metric].color}
+                fill={`url(#color-${metric})`}
                 strokeWidth={2}
                 dot={false}
               />
@@ -122,7 +129,7 @@ export default function AnalyticsPanel() {
                 strokeDasharray="5 5"
                 dot={false}
               />
-            </LineChart>
+            </AreaChart>
           </ResponsiveContainer>
       </ChartContainer>
     </div>
