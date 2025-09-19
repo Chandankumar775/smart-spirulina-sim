@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { SystemDiagramIcon } from '@/components/icons';
 import { useSimulation } from '@/hooks/use-simulation';
@@ -27,7 +28,20 @@ const MetricDisplay = ({ icon: Icon, label, value, unit, statusColor }: { icon: 
 export default function SystemDiagram() {
     const { state } = useSimulation();
     const { currentMetrics, controls, scenario } = state;
-    
+    const [cultureColor, setCultureColor] = useState('hsl(210, 80%, 60%)');
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCultureColor(prevColor => 
+                prevColor === 'hsl(210, 80%, 60%)' 
+                ? 'hsl(210, 60%, 55%)' 
+                : 'hsl(210, 80%, 60%)'
+            );
+        }, 30000); // Change color every 30 seconds
+
+        return () => clearInterval(interval);
+    }, []);
+
     const getStatusColor = (key: 'growthScore' | 'ph' | 'temperature', value: number) => {
         switch (key) {
             case 'growthScore': return value > 80 ? 'bg-green-400' : value > 50 ? 'bg-yellow-400' : 'bg-red-400';
@@ -37,7 +51,7 @@ export default function SystemDiagram() {
         }
     };
     
-    const cultureHealth = scenario === 'contamination' ? 'hsl(210, 20%, 40%)' : 'hsl(210, 80%, 60%)';
+    const finalCultureColor = scenario === 'contamination' ? 'hsl(30, 30%, 40%)' : cultureColor;
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -50,7 +64,7 @@ export default function SystemDiagram() {
                      <div className="relative">
                         <SystemDiagramIcon
                             waterLevel={currentMetrics.waterLevel}
-                            cultureColor={cultureHealth}
+                            cultureColor={finalCultureColor}
                             mixerOn={controls.mixerOn}
                             lightOn={controls.lightOn}
                         />
