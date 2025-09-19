@@ -11,7 +11,7 @@ export const INITIAL_METRICS: Metrics = {
 };
 
 export const INITIAL_SETTINGS: SimulationSettings = {
-  updateFrequency: 3, // seconds
+  updateFrequency: 1, // seconds
   growthRate: 1.0, // multiplier
   contaminationProbability: 0.005,
   aiCheckFrequency: 30, // seconds
