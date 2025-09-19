@@ -37,7 +37,7 @@ export default function SystemDiagram() {
         }
     };
     
-    const cultureHealth = scenario === 'contamination' ? 'hsl(80, 20%, 40%)' : 'hsl(150, 54%, 48%)';
+    const cultureHealth = scenario === 'contamination' ? 'hsl(210, 20%, 40%)' : 'hsl(210, 80%, 60%)';
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
