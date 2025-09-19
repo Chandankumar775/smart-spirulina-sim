@@ -32,3 +32,70 @@ export const SpirulinaTankIcon = ({ className }: { className?: string }) => (
     <circle cx="12" cy="17" r="0.4" className="bubble bubble-3" />
   </svg>
 );
+
+
+export const SystemDiagramIcon = ({ className, waterLevel = 80, cultureColor = 'hsl(150, 54%, 48%)', mixerOn = false, lightOn = true }: {
+    className?: string;
+    waterLevel?: number;
+    cultureColor?: string;
+    mixerOn?: boolean;
+    lightOn?: boolean;
+}) => {
+    const waterHeight = 155 * (waterLevel / 100);
+    const waterY = 210 - waterHeight;
+    
+    return (
+        <svg viewBox="0 0 400 300" className={cn(className)}>
+            <style>
+                {`
+                @keyframes spin {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+                .mixer-blade {
+                    transform-origin: center;
+                    animation: spin 3s linear infinite;
+                }
+                .light-glow {
+                   filter: drop-shadow(0 0 8px hsl(var(--primary)));
+                }
+                `}
+            </style>
+            
+            {/* Main Tank Structure */}
+            <rect x="100" y="50" width="200" height="200" rx="10" fill="#E2E8F0" stroke="#94A3B8" strokeWidth="2"/>
+            <rect x="90" y="40" width="220" height="20" rx="5" fill="#CBD5E1" />
+            <rect x="90" y="250" width="220" height="10" rx="5" fill="#CBD5E1" />
+
+            {/* Water/Culture */}
+            <g clipPath="url(#tankClip)">
+                <rect x="100" y={waterY} width="200" height={waterHeight} style={{ fill: cultureColor, transition: 'y 0.5s ease, height 0.5s ease, fill 0.5s ease' }} />
+            </g>
+            <clipPath id="tankClip">
+                <rect x="100" y="50" width="200" height="200" rx="10"/>
+            </clipPath>
+
+            {/* Pipes */}
+            <rect x="300" y="100" width="50" height="15" fill="#CBD5E1" stroke="#94A3B8" strokeWidth="1.5" />
+            <path d="M350 107.5 H 370 V 220 H 300" stroke="#CBD5E1" strokeWidth="15" fill="none" />
+             <path d="M350 107.5 H 370 V 220 H 300" stroke="#94A3B8" strokeWidth="1.5" fill="none" />
+
+            <rect x="50" y="100" width="50" height="15" fill="#CBD5E1" stroke="#94A3B8" strokeWidth="1.5" />
+            <path d="M50 107.5 H 30 V 150 H 100" stroke="#CBD5E1" strokeWidth="15" fill="none" />
+             <path dM="50 107.5 H 30 V 150 H 100" stroke="#94A3B8" strokeWidth="1.5" fill="none" />
+            
+            {/* Mixer */}
+            <line x1="200" y1="50" x2="200" y2="180" stroke="#94A3B8" strokeWidth="3" />
+            <g className={cn(mixerOn ? "mixer-blade": "")}>
+                <rect x="185" y="180" width="30" height="4" rx="2" fill="#94A3B8" />
+                <rect x="198" y="175" width="4" height="30" rx="2" fill="#94A3B8" />
+            </g>
+            
+            {/* Light */}
+            <g className={cn(lightOn ? 'light-glow' : '')} style={{transition: 'filter 0.3s ease'}}>
+               <rect x="140" y="25" width="120" height="10" rx="5" fill={lightOn ? 'hsl(var(--primary))' : '#94A3B8'}  style={{ transition: 'fill 0.3s ease' }} />
+            </g>
+
+        </svg>
+    )
+};
