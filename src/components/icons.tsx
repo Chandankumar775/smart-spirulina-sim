@@ -134,13 +134,15 @@ export const SystemDiagramIcon = ({ className, waterLevel = 80, cultureColor = '
             <path d="M50 107.5 H 30 V 150 H 100" strokeWidth="15" fill="none" stroke="url(#pipeGradient)" />
              <path d="M50 107.5 H 30 V 150 H 100" stroke="#94A3B8" strokeWidth="1.5" fill="none" />
             
-            {/* Mixer */}
+            {/* Turbine Fan */}
             <line x1="200" y1="50" x2="200" y2="180" stroke="#A0AEC0" strokeWidth="4" />
             <g className={cn(mixerOn ? "mixer-blade": "")}>
-                 <path d="M200,182 L170,178 L200,182 L230,178 Z" fill="#718096"/>
-                 <path d="M200,182 L170,186 L200,182 L230,186 Z" fill="#718096"/>
+                <rect x="195" y="162" width="10" height="40" rx="5" fill="#718096" transform="rotate(0 200 182)"/>
+                <rect x="195" y="162" width="10" height="40" rx="5" fill="#718096" transform="rotate(90 200 182)"/>
+                <rect x="195" y="162" width="10" height="40" rx="5" fill="#718096" transform="rotate(180 200 182)"/>
+                <rect x="195" y="162" width="10" height="40" rx="5" fill="#718096" transform="rotate(270 200 182)"/>
             </g>
-            <circle cx="200" cy="182" r="5" fill="#4A5568" />
+            <circle cx="200" cy="182" r="8" fill="#4A5568" />
             
             {/* Light */}
             <g className={cn(lightOn ? 'light-glow' : '')} style={{transition: 'filter 0.3s ease'}}>
