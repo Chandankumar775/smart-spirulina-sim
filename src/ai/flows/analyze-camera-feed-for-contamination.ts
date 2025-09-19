@@ -41,8 +41,35 @@ const analyzeCameraFeedForContaminationFlow = ai.defineFlow(
     inputSchema: AnalyzeCameraFeedInputSchema,
     outputSchema: AnalyzeCameraFeedOutputSchema,
   },
-  async ({ scenario }) => {
-    // Faked response for demo purposes, based on scenario
+  async ({ scenario, photoDataUri }) => {
+    // Faked response for demo purposes
+    // If a real photo was submitted, pretend to analyze it by adding some randomness.
+    const isManualAnalysis = photoDataUri.length > 100; // a simple check to see if it's not the placeholder
+    
+    if (isManualAnalysis) {
+        // Simulate a "real" analysis with some randomness
+        const isContaminated = Math.random() > 0.85; // 15% chance of mock contamination on manual check
+        if (isContaminated) {
+            return {
+                colorBalance: 'Needs Attention',
+                estimatedBiomassDensity: 110 + Math.random() * 20,
+                smellDetection: 'Contaminated',
+                colorBalanceConfidence: 85 + Math.random() * 10,
+                biomassDensityConfidence: 80 + Math.random() * 15,
+                smellDetectionConfidence: 90 + Math.random() * 9,
+            };
+        }
+         return {
+            colorBalance: 'Healthy',
+            estimatedBiomassDensity: 140 + Math.random() * 20,
+            smellDetection: 'Normal',
+            colorBalanceConfidence: 95 + Math.random() * 4,
+            biomassDensityConfidence: 92 + Math.random() * 7,
+            smellDetectionConfidence: 98 + Math.random() * 2,
+        };
+    }
+    
+    // Otherwise, use the scenario-based mock data
     const isContaminated = scenario === 'contamination';
     
     if (isContaminated) {
