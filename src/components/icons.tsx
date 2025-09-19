@@ -82,7 +82,7 @@ export const SystemDiagramIcon = ({ className, waterLevel = 80, cultureColor = '
 
             <rect x="50" y="100" width="50" height="15" fill="#CBD5E1" stroke="#94A3B8" strokeWidth="1.5" />
             <path d="M50 107.5 H 30 V 150 H 100" stroke="#CBD5E1" strokeWidth="15" fill="none" />
-             <path dM="50 107.5 H 30 V 150 H 100" stroke="#94A3B8" strokeWidth="1.5" fill="none" />
+             <path d="M50 107.5 H 30 V 150 H 100" stroke="#94A3B8" strokeWidth="1.5" fill="none" />
             
             {/* Mixer */}
             <line x1="200" y1="50" x2="200" y2="180" stroke="#94A3B8" strokeWidth="3" />
