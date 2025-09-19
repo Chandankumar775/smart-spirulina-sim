@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
-import { Bot, CheckCircle, AlertTriangle, Zap, Percent, Camera } from 'lucide-react';
+import { Bot, CheckCircle, AlertTriangle, Zap, Percent, Upload } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -10,49 +10,27 @@ import { analyzeCameraFeedForContamination, AnalyzeCameraFeedOutput } from '@/ai
 import { useSimulation } from '@/hooks/use-simulation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
+
 
 export default function AiAnalysisPanel() {
   const { state: { settings, isRunning, scenario }, dispatch } = useSimulation();
   const [analysis, setAnalysis] = useState<AnalyzeCameraFeedOutput | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const [hasCameraPermission, setHasCameraPermission] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
+  const spirulinaImage = PlaceHolderImages.find(p => p.id === 'spirulina-feed');
+
   useEffect(() => {
-    const getCameraPermission = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({video: true});
-        setHasCameraPermission(true);
-
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-      } catch (error) {
-        console.error('Error accessing camera:', error);
-        setHasCameraPermission(false);
-        toast({
-          variant: 'destructive',
-          title: 'Camera Access Denied',
-          description: 'Please enable camera permissions in your browser settings to use this feature.',
-        });
-      }
-    };
-
-    getCameraPermission();
-
-    return () => {
-      if (videoRef.current && videoRef.current.srcObject) {
-        const stream = videoRef.current.srcObject as MediaStream;
-        stream.getTracks().forEach(track => track.stop());
-      }
+    if (spirulinaImage) {
+        setImagePreview(spirulinaImage.imageUrl);
     }
-  }, [toast]);
+  }, [spirulinaImage]);
+
 
   const runAnalysis = useCallback(async (imageDataUri?: string) => {
     setIsLoading(true);
@@ -85,19 +63,28 @@ export default function AiAnalysisPanel() {
     }
   }, [isRunning, settings.aiCheckFrequency, runAnalysis]);
 
-  const handleManualAnalysis = () => {
-    if (videoRef.current && canvasRef.current) {
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const context = canvas.getContext('2d');
-      if (context) {
-        context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-        const dataUri = canvas.toDataURL('image/jpeg');
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const dataUri = reader.result as string;
+        setImagePreview(dataUri);
         runAnalysis(dataUri);
-        dispatch({ type: 'ADD_LOG', payload: { type: 'info', message: 'Manual camera analysis initiated.' } });
+        dispatch({ type: 'ADD_LOG', payload: { type: 'info', message: 'Manual analysis initiated from uploaded image.' } });
+      };
+      reader.onerror = () => {
+        toast({
+            variant: 'destructive',
+            title: 'File Read Error',
+            description: 'Could not read the selected file.',
+        });
       }
+      reader.readAsDataURL(file);
     }
   };
 
@@ -129,25 +116,30 @@ export default function AiAnalysisPanel() {
       </CardHeader>
       <CardContent>
         <div className="aspect-video w-full overflow-hidden rounded-md mb-4 relative bg-muted">
-          <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
-          <canvas ref={canvasRef} className="hidden" />
+            {imagePreview && spirulinaImage && (
+                <Image 
+                    src={imagePreview} 
+                    alt={spirulinaImage.description} 
+                    fill 
+                    className="object-cover" 
+                    data-ai-hint={spirulinaImage.imageHint}
+                />
+            )}
           {isLoading && <div className="absolute inset-0 bg-background/50 flex items-center justify-center"><Zap className="h-8 w-8 text-primary animate-pulse" /></div>}
         </div>
         
-        { !hasCameraPermission && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Camera Access Required</AlertTitle>
-              <AlertDescription>
-                Please allow camera access to use this feature.
-              </AlertDescription>
-            </Alert>
-        )}
+        <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            className="hidden"
+            accept="image/*"
+        />
 
         <div className="space-y-3">
-           <Button onClick={handleManualAnalysis} disabled={!hasCameraPermission || isLoading} className="w-full">
-            <Camera className="h-4 w-4 mr-2" />
-            Analyze from Camera
+           <Button onClick={handleUploadClick} disabled={isLoading} className="w-full">
+            <Upload className="h-4 w-4 mr-2" />
+            Upload Tank Image
           </Button>
 
           {isLoading && !analysis ? (
