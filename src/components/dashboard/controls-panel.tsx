@@ -1,6 +1,6 @@
 'use client';
 
-import { Layers, Lightbulb, LightbulbOff, Droplets, Combine, SlidersHorizontal } from 'lucide-react';
+import { Layers, Lightbulb, LightbulbOff, Droplets, Combine, SlidersHorizontal, Fan } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useSimulation } from '@/hooks/use-simulation';
@@ -10,10 +10,10 @@ import { Separator } from '@/components/ui/separator';
 export default function ControlsPanel() {
   const { state: { controls }, dispatch } = useSimulation();
 
-  const handleControlClick = (control: 'mixer' | 'light' | 'harvest' | 'flush') => {
+  const handleControlClick = (control: 'turbine' | 'light' | 'harvest' | 'flush') => {
     dispatch({ type: 'LOG_CONTROL_ACTION', payload: control });
     switch (control) {
-      case 'mixer':
+      case 'turbine':
         dispatch({ type: 'TOGGLE_MIXER' });
         break;
       case 'light':
@@ -38,11 +38,11 @@ export default function ControlsPanel() {
         <div className="grid grid-cols-2 gap-4">
           <Button
             variant={controls.mixerOn ? "default" : "outline"}
-            onClick={() => handleControlClick('mixer')}
+            onClick={() => handleControlClick('turbine')}
             className="flex flex-col h-20 gap-1"
           >
-            <Layers className="h-6 w-6" />
-            <span>Mixer</span>
+            <Fan className="h-6 w-6" />
+            <span>Turbine</span>
             <span className={cn("text-xs", controls.mixerOn ? "text-primary-foreground/80" : "text-muted-foreground")}>
               {controls.mixerOn ? 'ON' : 'OFF'}
             </span>
