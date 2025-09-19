@@ -28,30 +28,30 @@ const reducer = (state: SimulationState, action: Action): SimulationState => {
 
       newMetrics.ph = fluctuate(newMetrics.ph, 0.02 * settings.growthRate);
       newMetrics.temperature = fluctuate(newMetrics.temperature, 0.1);
-      newMetrics.dissolvedOxygen = fluctuate(newMetrics.dissolvedOxygen, 0.1);
       
       // Growth
       let growthFactor = 0.1 * settings.growthRate;
       if (controls.lightOn) growthFactor *= 1.5;
       if (controls.mixerOn) growthFactor *= 1.2;
-      newMetrics.turbidity = Math.min(300, newMetrics.turbidity + growthFactor);
       
       // Scenario effects
       switch(scenario) {
         case 'contamination':
           newMetrics.odorIndex = Math.min(100, newMetrics.odorIndex + 2 * settings.growthRate);
           newMetrics.ph -= 0.05;
+          newMetrics.growthScore = Math.max(0, newMetrics.growthScore - 0.2 * settings.growthRate);
           break;
         case 'low-light':
           newMetrics.lightIntensity = Math.max(5000, newMetrics.lightIntensity - 1000);
-          newMetrics.turbidity = Math.max(20, newMetrics.turbidity - 0.05 * settings.growthRate);
+          newMetrics.growthScore = Math.max(0, newMetrics.growthScore - 0.1 * settings.growthRate);
           break;
         case 'rapid-growth':
-          newMetrics.turbidity = Math.min(300, newMetrics.turbidity + growthFactor * 1.5);
+          newMetrics.growthScore = Math.min(100, newMetrics.growthScore + growthFactor * 1.5);
           break;
         default: // normal
            newMetrics.odorIndex = Math.max(5, newMetrics.odorIndex - 0.1);
            newMetrics.lightIntensity = fluctuate(55000, 1000);
+           newMetrics.growthScore = Math.min(100, newMetrics.growthScore + growthFactor);
       }
 
       // Random contamination event
@@ -62,9 +62,6 @@ const reducer = (state: SimulationState, action: Action): SimulationState => {
       // Clamp values
       newMetrics.ph = Math.max(METRIC_RANGES.ph.min, Math.min(METRIC_RANGES.ph.max, newMetrics.ph));
       newMetrics.odorIndex = Math.max(0, Math.min(100, newMetrics.odorIndex));
-      
-      // Update growth score
-      newMetrics.growthScore = (newMetrics.turbidity / 300) * 100;
       
       const newHistory = [...state.metricsHistory, { ...newMetrics, timestamp: Date.now() }];
       // Keep history to a reasonable size
@@ -95,7 +92,7 @@ const reducer = (state: SimulationState, action: Action): SimulationState => {
         return { ...state, currentMetrics: newMetrics };
     }
     case 'TRIGGER_HARVEST': {
-        const harvestedAmount = state.currentMetrics.turbidity * 0.8;
+        const harvestedAmount = state.currentMetrics.growthScore * 1.8;
         const newReport: HarvestReport = {
             id: Date.now().toString(),
             timestamp: Date.now(),
@@ -103,7 +100,7 @@ const reducer = (state: SimulationState, action: Action): SimulationState => {
             quality: Math.max(0, 100 - state.currentMetrics.odorIndex),
             waterReused: 95.0,
         };
-        const newMetrics = { ...state.currentMetrics, turbidity: state.currentMetrics.turbidity * 0.2 };
+        const newMetrics = { ...state.currentMetrics, growthScore: state.currentMetrics.growthScore * 0.2 };
         return {
             ...state,
             currentMetrics: newMetrics,

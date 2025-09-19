@@ -1,8 +1,6 @@
 export type MetricKey =
   | 'waterLevel'
   | 'ph'
-  | 'dissolvedOxygen'
-  | 'turbidity'
   | 'temperature'
   | 'lightIntensity'
   | 'odorIndex'

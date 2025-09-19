@@ -4,8 +4,6 @@ export const INITIAL_METRICS: Metrics = {
   timestamp: Date.now(),
   waterLevel: 85.0,
   ph: 9.5,
-  dissolvedOxygen: 7.2,
-  turbidity: 45.0,
   temperature: 29.5,
   lightIntensity: 55000,
   odorIndex: 10.0,
@@ -63,5 +61,4 @@ export const INITIAL_STATE: SimulationState = {
 export const METRIC_RANGES = {
   ph: { min: 8.0, max: 11.0, optimal: [9.0, 10.5] },
   temperature: { min: 20, max: 40, optimal: [28, 32] },
-  dissolvedOxygen: { min: 2, max: 15, optimal: [6, 10] },
 };

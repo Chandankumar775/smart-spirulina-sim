@@ -7,19 +7,18 @@ import { useSimulation } from '@/hooks/use-simulation';
 import { ChartTooltipContent, ChartContainer } from '@/components/ui/chart';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-type MetricKey = 'ph' | 'dissolvedOxygen' | 'turbidity' | 'waterLevel' | 'temperature';
+type MetricKey = 'ph' | 'waterLevel' | 'temperature' | 'growthScore';
 
 const chartConfigs: Record<MetricKey, { name: string; color: string; predColor: string }> = {
   ph: { name: 'pH Level', color: 'hsl(var(--chart-1))', predColor: 'hsl(var(--chart-1))' },
-  dissolvedOxygen: { name: 'Dissolved Oxygen (mg/L)', color: 'hsl(var(--chart-2))', predColor: 'hsl(var(--chart-2))' },
-  turbidity: { name: 'Turbidity / Density', color: 'hsl(var(--chart-3))', predColor: 'hsl(var(--chart-3))' },
   waterLevel: { name: 'Water Level (%)', color: 'hsl(var(--chart-4))', predColor: 'hsl(var(--chart-4))' },
   temperature: { name: 'Temperature (°C)', color: 'hsl(var(--chart-5))', predColor: 'hsl(var(--chart-5))' },
+  growthScore: { name: 'Growth Score', color: 'hsl(var(--chart-3))', predColor: 'hsl(var(--chart-3))' },
 };
 
 export default function AnalyticsPanel() {
   const { state } = useSimulation();
-  const [activeChart, setActiveChart] = useState<MetricKey>('turbidity');
+  const [activeChart, setActiveChart] = useState<MetricKey>('growthScore');
   const [timeRange, setTimeRange] = useState('1h');
   const [isClient, setIsClient] = useState(false);
 
@@ -44,8 +43,7 @@ export default function AnalyticsPanel() {
       ...lastEntry,
       timestamp: lastEntry.timestamp + 5 * 60 * 1000, // 5 min into future
       ph_pred: lastEntry.ph * (1 + (Math.random() - 0.5) * 0.02),
-      dissolvedOxygen_pred: lastEntry.dissolvedOxygen * (1 + (Math.random() - 0.5) * 0.05),
-      turbidity_pred: lastEntry.turbidity * (1 + state.settings.growthRate * 0.1),
+      growthScore_pred: lastEntry.growthScore * (1 + state.settings.growthRate * 0.1),
       waterLevel_pred: lastEntry.waterLevel - 0.1,
       temperature_pred: lastEntry.temperature,
     };
@@ -148,10 +146,9 @@ export default function AnalyticsPanel() {
       </CardHeader>
       <CardContent className="space-y-4">
         <Tabs value={activeChart} onValueChange={(v) => setActiveChart(v as MetricKey)} className="w-full">
-            <TabsList className="grid w-full grid-cols-5">
-                <TabsTrigger value="turbidity">Biomass</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="growthScore">Biomass</TabsTrigger>
                 <TabsTrigger value="ph">pH</TabsTrigger>
-                <TabsTrigger value="dissolvedOxygen">Oxygen</TabsTrigger>
                 <TabsTrigger value="waterLevel">Water Level</TabsTrigger>
                 <TabsTrigger value="temperature">Temp</TabsTrigger>
             </TabsList>
