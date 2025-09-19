@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
-import { Bot, CheckCircle, AlertTriangle, Zap, Percent, Upload } from 'lucide-react';
+import { Bot, CheckCircle, AlertTriangle, Zap, Percent, Upload, Camera } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 
 export default function AiAnalysisPanel() {
@@ -21,16 +22,40 @@ export default function AiAnalysisPanel() {
   const [error, setError] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+
   const { toast } = useToast();
 
   const spirulinaImage = PlaceHolderImages.find(p => p.id === 'spirulina-feed');
 
   useEffect(() => {
-    if (spirulinaImage) {
-        setImagePreview(spirulinaImage.imageUrl);
-    }
-  }, [spirulinaImage]);
+    const getCameraPermission = async () => {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        console.error('Camera API not available in this browser.');
+        setHasCameraPermission(false);
+        return;
+      }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        setHasCameraPermission(true);
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      } catch (error) {
+        console.error('Error accessing camera:', error);
+        setHasCameraPermission(false);
+        toast({
+          variant: 'destructive',
+          title: 'Camera Access Denied',
+          description: 'Please enable camera permissions in your browser settings to use this app.',
+        });
+      }
+    };
 
+    getCameraPermission();
+  }, [toast]);
+  
 
   const runAnalysis = useCallback(async (imageDataUri?: string) => {
     setIsLoading(true);
@@ -56,7 +81,6 @@ export default function AiAnalysisPanel() {
 
   useEffect(() => {
     if (isRunning) {
-      // Initial analysis
       runAnalysis();
       const interval = setInterval(() => runAnalysis(), settings.aiCheckFrequency * 1000);
       return () => clearInterval(interval);
@@ -115,19 +139,37 @@ export default function AiAnalysisPanel() {
         <Bot className="h-5 w-5 text-muted-foreground" />
       </CardHeader>
       <CardContent>
-        <div className="aspect-video w-full overflow-hidden rounded-md mb-4 relative bg-muted">
-            {imagePreview && spirulinaImage && (
-                <Image 
-                    src={imagePreview} 
-                    alt={spirulinaImage.description} 
-                    fill 
-                    className="object-cover" 
-                    data-ai-hint={spirulinaImage.imageHint}
-                />
-            )}
+        <div className="aspect-video w-full overflow-hidden rounded-md mb-4 relative bg-muted flex items-center justify-center">
+          <video ref={videoRef} className={cn("w-full aspect-video rounded-md", hasCameraPermission ? "block" : "hidden")} autoPlay muted />
+          {hasCameraPermission === false && (
+             <div className="p-4">
+                <Alert variant="destructive">
+                    <Camera className="h-4 w-4"/>
+                    <AlertTitle>Camera Access Required</AlertTitle>
+                    <AlertDescription>
+                        Please allow camera access in your browser to use this feature. You can still upload an image.
+                    </AlertDescription>
+                </Alert>
+             </div>
+          )}
+           {hasCameraPermission === null && (
+             <Zap className="h-8 w-8 text-primary animate-pulse" />
+          )}
+
           {isLoading && <div className="absolute inset-0 bg-background/50 flex items-center justify-center"><Zap className="h-8 w-8 text-primary animate-pulse" /></div>}
         </div>
         
+        {imagePreview && (
+             <div className="aspect-video w-full overflow-hidden rounded-md mb-4 relative bg-muted">
+                <Image 
+                    src={imagePreview} 
+                    alt="Uploaded spirulina tank" 
+                    fill 
+                    className="object-cover" 
+                />
+            </div>
+        )}
+
         <input
             type="file"
             ref={fileInputRef}
