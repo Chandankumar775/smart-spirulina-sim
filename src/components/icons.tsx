@@ -100,6 +100,20 @@ export const SystemDiagramIcon = ({ className, waterLevel = 80, cultureColor = '
                   animation-iteration-count: infinite;
                   animation-timing-function: linear;
                 }
+                @keyframes float {
+                    0% { transform: translate(0, 0) rotate(0deg); }
+                    25% { transform: translate(5px, -8px) rotate(45deg); }
+                    50% { transform: translate(-3px, -15px) rotate(90deg); }
+                    75% { transform: translate(2px, -22px) rotate(135deg); }
+                    100% { transform: translate(0, -30px) rotate(180deg); opacity: 0;}
+                }
+                .spirulina {
+                    fill: hsl(140, 80%, 70%);
+                    opacity: 0;
+                    animation-name: float;
+                    animation-iteration-count: infinite;
+                    animation-timing-function: ease-in-out;
+                }
                 `}
             </style>
             
@@ -115,6 +129,16 @@ export const SystemDiagramIcon = ({ className, waterLevel = 80, cultureColor = '
                 <path d={`M 100 ${waterY} q 20 -10 40 0 t 40 0 t 40 0 t 40 0 t 40 0 V 250 H 100 Z`} fill={cultureColor} style={{transition: 'd 0.5s ease, fill 0.5s ease'}} className="water-wave" />
                 <path d={`M 80 ${waterY} q 20 10 40 0 t 40 0 t 40 0 t 40 0 t 40 0 V 250 H 80 Z`} fill={cultureColor} opacity="0.5" style={{transition: 'd 0.5s ease, fill 0.5s ease'}} className="water-wave" transform="translate(20, 2)" />
                 
+                {/* Spirulina Particles */}
+                <g style={{ transition: 'transform 0.5s ease' }} transform={`translate(0, ${waterY + waterHeight - 20})`}>
+                    <path d="M125,0 A5,5 0 0,1 120,5 A5,5 0 0,1 125,10" className="spirulina" style={{ animationDuration: '8s', animationDelay: '0s' }} stroke="hsl(140, 100%, 80%)" strokeWidth="0.5" />
+                    <path d="M150,0 A4,4 0 0,0 154,4 A4,4 0 0,0 150,8" className="spirulina" style={{ animationDuration: '10s', animationDelay: '2s' }} stroke="hsl(140, 100%, 80%)" strokeWidth="0.5" />
+                    <path d="M180,0 A6,6 0 0,1 174,6 A6,6 0 0,1 180,12" className="spirulina" style={{ animationDuration: '7s', animationDelay: '1s' }} stroke="hsl(140, 100%, 80%)" strokeWidth="0.5" />
+                    <path d="M210,0 A5,5 0 0,0 215,5 A5,5 0 0,0 210,10" className="spirulina" style={{ animationDuration: '9s', animationDelay: '3s' }} stroke="hsl(140, 100%, 80%)" strokeWidth="0.5" />
+                    <path d="M240,0 A4,4 0 0,1 236,4 A4,4 0 0,1 240,8" className="spirulina" style={{ animationDuration: '11s', animationDelay: '4s' }} stroke="hsl(140, 100%, 80%)" strokeWidth="0.5" />
+                    <path d="M265,0 A5,5 0 0,0 270,5 A5,5 0 0,0 265,10" className="spirulina" style={{ animationDuration: '8s', animationDelay: '5s' }} stroke="hsl(140, 100%, 80%)" strokeWidth="0.5" />
+                </g>
+
                 {/* Bubbles */}
                 <g style={{ transition: 'transform 0.5s ease' }} transform={`translate(0, ${waterY + waterHeight - 10})`}>
                     <circle cx="130" r="3" className="bubble" style={{ animationDelay: '0s' }} />
