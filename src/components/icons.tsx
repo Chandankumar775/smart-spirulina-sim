@@ -101,11 +101,11 @@ export const SystemDiagramIcon = ({ className, waterLevel = 80, cultureColor = '
                   animation-timing-function: linear;
                 }
                 @keyframes float {
-                    0% { transform: translate(0, 0) rotate(0deg); }
-                    25% { transform: translate(5px, -8px) rotate(45deg); }
-                    50% { transform: translate(-3px, -15px) rotate(90deg); }
-                    75% { transform: translate(2px, -22px) rotate(135deg); }
-                    100% { transform: translate(0, -30px) rotate(180deg); opacity: 0;}
+                    0% { transform: translate(0, 0) rotate(0deg); opacity: 0.8; }
+                    25% { transform: translate(5px, -20px) rotate(45deg); }
+                    50% { transform: translate(-3px, -40px) rotate(90deg); }
+                    75% { transform: translate(2px, -60px) rotate(135deg); }
+                    100% { transform: translate(0, -80px) rotate(180deg); opacity: 0;}
                 }
                 .spirulina {
                     fill: hsl(140, 80%, 70%);
