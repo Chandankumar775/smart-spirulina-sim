@@ -28,8 +28,6 @@ export default function DashboardHeader() {
         <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
           <div className="ml-auto flex-1 sm:flex-initial">
             <div className="relative flex items-center gap-2">
-              <TestTube className="h-4 w-4 text-muted-foreground" />
-              <label htmlFor="scenario-select" className="text-sm font-medium text-muted-foreground">Demo Scenario</label>
               <Select value={scenario} onValueChange={handleScenarioChange}>
                 <SelectTrigger id="scenario-select" className="w-[180px]">
                   <SelectValue placeholder="Select Scenario" />
