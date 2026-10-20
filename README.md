@@ -1,6 +1,6 @@
 <div align="center">
 
-# Smart Spirulina Sim
+<img src="docs/brand/wordmark.webp" alt="Smart Spirulina Sim" width="100%">
 
 **A working prototype of an IoT and AI spirulina cultivation system: live sensor values, a simulated AI camera, alerts and harvest logs, all running on simulated data.**
 
